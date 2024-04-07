@@ -1,5 +1,5 @@
-import { game, toggleMovement } from "./game.js";
-import { canvasConfig } from "./config.js";
+import { game, toggleMovement } from "./game/game.js";
+import { canvasConfig } from "./game/config/config.js";
 let canvas;
 let context;
 let fpsInterval = 1000 / 30;
