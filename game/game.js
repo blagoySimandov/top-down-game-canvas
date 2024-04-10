@@ -1,15 +1,19 @@
 import { Player } from "./entities/creature.js";
 import { Map } from "./map/map.js";
+
 import { Wave } from "./wave.js";
 import { canvasConfig } from "./config/config.js";
+import { Camera, Viewport } from "./viewport/viewport.js";
 //globals are created on module load
-export const player = new Player();
+export const player = new Player(525, 375, 20, 30);
 const map = new Map();
+const camera = new Camera(player);
 const waves = [];
+
 setInterval(() => waves.push(new Wave(3, 100, player)), 500); //Simple wave system
-function drawGame(ctx) {
+function drawGame(ctx, viewport) {
   player.move();
-  player.draw(ctx);
+  player.draw(ctx, viewport);
   const totalEnemies = [];
   waves.forEach((wave) => {
     wave.draw(ctx);
@@ -30,13 +34,12 @@ const enemyCollision = (enemies) => {
   });
 };
 
-export function camera(ctx) {
-  //Camera follows player
-  let y = -player.yPos + canvasConfig.height / 2;
-  let x = -player.xPos + canvasConfig.width / 2;
-  map.drawMap(ctx, { x: -y, y: -x });
+export function game(ctx) {
+  camera.update();
+  map.drawMap(ctx, camera.viewport);
   ctx.save();
-  ctx.translate(x, y);
-  drawGame(ctx);
+  ctx.translate(-camera.viewport.x, -camera.viewport.y);
+  drawGame(ctx, camera.viewport);
+  camera.viewport.draw(ctx);
   ctx.restore();
 }

@@ -1,4 +1,4 @@
-import { camera } from "./game/game.js";
+import { game } from "./game/game.js";
 import { player } from "./game/game.js";
 import { canvasConfig } from "./game/config/config.js";
 let canvas;
@@ -14,6 +14,7 @@ function init() {
   canvas.width = canvasConfig.width;
   canvas.height = canvasConfig.height;
   context = canvas.getContext("2d");
+  context.imageSmoothingEnabled = false;
   document.addEventListener("keydown", (event) =>
     player.toggleMovement(event, true)
   );
@@ -29,8 +30,8 @@ function draw() {
 
   if (elapsed > fpsInterval) {
     then = now - (elapsed % fpsInterval);
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    camera(context);
+    context.clearRect(0, 0, canvasConfig.width, canvasConfig.height);
+    game(context);
     requestId = requestAnimationFrame(draw);
   } else {
     requestId = requestAnimationFrame(draw);
