@@ -1,7 +1,9 @@
 export const canvasConfig = {
-  width: 1000,
-  height: 700,
+  width: 1008,
+  height: 704,
 };
+export const tileSize = 16;
+export const scaledTileSize = 32;
 //by doing this we can add left + down and get downLeft
 export const Orientation = Object.freeze({
   left: 1 << 0, // 0001

@@ -4,8 +4,8 @@ import { Weapon } from "./weapon.js";
 import { getRandomInt } from "../utils.js";
 export class Creature {
   constructor(xPos, yPos, width, height, speed, color, orien) {
-    this.xPos = xPos || 500;
-    this.yPos = yPos || 350;
+    this.xPos = xPos || 0;
+    this.yPos = yPos || 0;
     this.width = width || 20;
     this.orientation = this.height = height || 30;
     this.speed = speed || 10;
@@ -171,7 +171,21 @@ export class Player extends Creature {
 
     if (!(dx === 0 && dy === 0)) this.changeDirection(dx, dy);
   }
-  draw(ctx) {
-    super.draw(ctx);
+  draw(ctx, viewport) {
+    ctx.save();
+    ctx.fillStyle = "black";
+    let drawX = this.cx - viewport.x;
+    let drawY = this.cy - viewport.y;
+    if (viewport.followingX) {
+      drawX = viewport.x + viewport.w / 2;
+    }
+    if (viewport.followingY) {
+      drawY = viewport.y + viewport.h / 2;
+    }
+    // before draw we need to convert player world's position to canvas position
+    // viewport.x + viewport.w / 2,
+    // viewport.y + viewport.h / 2,
+    ctx.fillRect(drawX, drawY, this.width, this.height);
+    ctx.restore();
   }
 }
