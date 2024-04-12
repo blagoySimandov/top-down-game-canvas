@@ -1,9 +1,9 @@
 export function boxCollision(object1, object2) {
   return (
-    object1.xPos + object1.width >= object2.xPos &&
-    object1.xPos <= object2.xPos + object2.width &&
-    object1.yPos + object1.height >= object2.yPos &&
-    object1.yPos <= object2.yPos + object2.height
+    object1.movement.xPos + object1.width >= object2.movement.xPos &&
+    object1.movement.xPos <= object2.movement.xPos + object2.width &&
+    object1.movement.yPos + object1.height >= object2.movement.yPos &&
+    object1.movement.yPos <= object2.movement.yPos + object2.height
   );
 }
 
@@ -14,15 +14,15 @@ export function resolveCollision(a, b) {
   vecotorY = a.cy - b.cy;
   if (vecotorY * vecotorY > vectorX * vectorX) {
     if (vecotorY > 0) {
-      a.yPos = b.yPos + b.height; // bottom of b
+      a.movement.yPos = b.movement.yPos + b.height; // bottom of b
     } else {
-      a.yPos = b.yPos - b.height;
+      a.movement.yPos = b.movement.yPos - b.height;
     }
   } else {
     if (vectorX > 0) {
-      a.xPos = b.xPos + b.width; // right side
+      a.movement.xPos = b.movement.xPos + b.width; // right side
     } else {
-      a.xPos = b.xPos - a.width;
+      a.movement.xPos = b.movement.xPos - a.width;
     }
   }
 }

@@ -10,12 +10,12 @@ export class Map {
     this.tileSize = tileSize;
     this.scaledTileSize = scaledTileSize;
     //Rows,Cols
-    this.mapRows = 30;
-    this.mapCols = 30;
+    this.mapRows = 60;
+    this.mapCols = 60;
     this.atlasCols = 26;
     this.logicGrid = [];
-    this.mapHeight = this.mapRows * this.tileSize;
-    this.mapWidth = this.mapCols * this.tileSize;
+    this.mapHeight = this.mapRows * this.scaledTileSize;
+    this.mapWidth = this.mapCols * this.scaledTileSize;
   }
   /**@param {int} c - column position
    * @param {int} r - row position
@@ -51,8 +51,8 @@ export class Map {
     for (let x = minX; x < maxX; x++) {
       for (let y = minY; y < maxY; y++) {
         const tile = this.getTile(x, y);
-        let tileX = Math.floor(x * this.scaledTileSize - viewport.x);
-        let tileY = Math.floor(y * scaledTileSize - viewport.y);
+        let tileX = Math.floor(x * this.scaledTileSize - viewport.x); //- viewport.x
+        let tileY = Math.floor(y * this.scaledTileSize - viewport.y); //- viewport.y
         let sourceY = Math.floor(tile / this.atlasCols) * this.tileSize;
         let sourceX = (tile % this.atlasCols) * this.tileSize;
         ctx.drawImage(

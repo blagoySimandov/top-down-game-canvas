@@ -1,73 +1,69 @@
-import { Orientation, canvasConfig } from "../config/config.js";
+import { canvasConfig } from "../config/config.js";
+import {
+  PlayerMovement,
+  EnemyMovement,
+  Movement,
+} from "../movement/movement.js";
 import { resolveCollision, boxCollision } from "../utils.js";
+import { Animation } from "../animation/animation.js";
 import { Weapon } from "./weapon.js";
 import { getRandomInt } from "../utils.js";
 export class Creature {
-  constructor(xPos, yPos, width, height, speed, color, orien) {
-    this.xPos = xPos || 0;
-    this.yPos = yPos || 0;
+  /**
+   * @param {int} width - width of the creature
+   * @param {int} height - height of the creature
+   * @param {Movement} movement - movement logic and position.
+   * @param {Image} sprite - Sprite with which to draw the entity.
+   */
+  constructor(width, height, movement, sprite) {
     this.width = width || 20;
-    this.orientation = this.height = height || 30;
-    this.speed = speed || 10;
-    this.color = color || "red";
-    this.orientation = Orientation[orien] || Orientation.left;
-  }
-  move() {
-    throw new Error("Not implemented");
-  }
-  //center x
+    this.height = height || 30;
+    this.movement = movement;
+    this.sprite = sprite;
+  } //center x
   get cx() {
-    return this.xPos + this.width * 0.5;
+    return this.movement.xPos + this.width * 0.5;
   } //center y
   get cy() {
-    return this.yPos + this.height * 0.5;
+    return this.movement.yPos + this.height * 0.5;
   }
-  changeDirection(dx, dy) {
-    let xDir = 0;
-    let yDir = 0;
-    if (dx === 0) {
-      xDir = 0;
-    } else {
-      xDir = dx > 0 ? Orientation.left : Orientation.right;
-    }
-
-    if (dy === 0) {
-      yDir = 0;
-    } else {
-      yDir = dy > 0 ? Orientation.down : Orientation.up;
-    }
-
-    const orien = xDir | yDir; //open config.js for explanations
-    this.orientation = orien;
-  }
-
   draw(ctx) {
     ctx.fillStyle = this.color;
-    ctx.fillRect(this.xPos, this.yPos, this.width, this.height);
+    if (this.sprite) {
+      ctx.drawRect(
+        this.sprite,
+        this.movement.xPos,
+        this.movement.yPos,
+        this.width,
+        this.height
+      );
+    } else {
+      ctx.fillRect(
+        this.movement.xPos,
+        this.movement.yPos,
+        this.width,
+        this.height
+      );
+    }
   }
 }
 
 export class Enemy extends Creature {
-  constructor({ xPos, yPos, width, height, id }) {
-    super(xPos, yPos, width, height);
-    this.speed = 5;
+  constructor({ xPos, yPos, width, height, id }, speed) {
+    const movemementSpeed = speed || 10;
+    const enemyMovementAnimation = new Animation(null, {});
+    const movement = new EnemyMovement(
+      movemementSpeed,
+      enemyMovementAnimation,
+      xPos,
+      yPos
+    );
+    super(width, height, movement);
+    this.color = "red";
     this.id = id || -1;
   }
-  /**moves the enemy towards a certain position. Used for chasing the player
-   * @param {int} x
-   * @param {int} y
-   */
-  move(x, y) {
-    const dx = x - this.xPos;
-    const dy = y - this.yPos;
-    this.changeDirection(dx, dy);
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    const step = this.speed / distance;
-    this.xPos += dx * step;
-    this.yPos += dy * step;
-  }
-  /**@param {Enemy} enemy
+  /**
+   * @param {Enemy} enemy
    * @description Takes an enemy as an arguments, hecks collison and resolves that collison if needed
    */
   collisionDetectAndResolve(enemy) {
@@ -77,23 +73,26 @@ export class Enemy extends Creature {
   }
 
   /** spawns and enemy at a random postion on the edge of the screen*/
+  /**Should move it in a factory. //Don't have time for this now. Will do it later. (probably ;d)// */
   static spawn(id, player) {
     const side = Math.floor(Math.random() * 4);
     const enemyWidth = 20;
     const enemyHeight = 30;
     let xPos, yPos;
     let xRandom = getRandomInt(
-      player.xPos - canvasConfig.width / 2,
-      player.xPos + canvasConfig.width / 2
+      player.movement.xPos - canvasConfig.width / 2,
+      player.movement.xPos + canvasConfig.width / 2
     );
     let yRandom = getRandomInt(
-      player.yPos - canvasConfig.height / 2,
-      player.yPos + canvasConfig.height / 2
+      player.movement.yPos - canvasConfig.height / 2,
+      player.movement.yPos + canvasConfig.height / 2
     );
-    let rightBound = Math.floor(player.xPos + canvasConfig.width / 2);
-    let leftBound = Math.floor(player.xPos - canvasConfig.width / 2);
-    let topBound = Math.floor(player.yPos + canvasConfig.height / 2);
-    let bottomBound = Math.floor(player.yPos - canvasConfig.height / 2);
+    let rightBound = Math.floor(player.movement.xPos + canvasConfig.width / 2);
+    let leftBound = Math.floor(player.movement.xPos - canvasConfig.width / 2);
+    let topBound = Math.floor(player.movement.yPos + canvasConfig.height / 2);
+    let bottomBound = Math.floor(
+      player.movement.yPos - canvasConfig.height / 2
+    );
     const offset = 300;
     switch (side) {
       case 0: // Top side
@@ -113,79 +112,44 @@ export class Enemy extends Creature {
         yPos = yRandom;
         break;
     }
-    return new Enemy({ xPos: xPos, yPos: yPos, id: id });
+    return new Enemy({ xPos: xPos, yPos: yPos, id: id }, 5);
   }
 }
 export class Player extends Creature {
-  constructor(xPos, yPos, width, height, orien) {
-    super(xPos, yPos, width, height, orien);
-    this.speed = 10;
-    this.color = "green";
+  constructor(xPos, yPos, width, height, speed, sprite) {
+    const movement = new PlayerMovement(speed, xPos, yPos);
+    super(width, height, movement, sprite);
+    this.drawler = null;
     this.weapon = new Weapon(10, 1);
-    this.movement = {
-      moveLeft: false,
-      moveRight: false,
-      moveUp: false,
-      moveDown: false,
-      attack: false,
-    };
-  }
-  toggleMovement(event, activate) {
-    const key = event.code;
-    if (key === "ArrowLeft") {
-      this.movement.moveLeft = activate;
-    } else if (key === "ArrowRight") {
-      this.movement.moveRight = activate;
-    } else if (key === "ArrowUp") {
-      this.movement.moveUp = activate;
-    } else if (key === "ArrowDown") {
-      this.movement.moveDown = activate;
-    } else if (key === "KeyZ") {
-      this.movement.attack = activate;
-    }
   }
 
-  move() {
-    let tempspeed =
-      this.movement.moveLeft || this.movement.moveRight
-        ? this.movement.moveUp || this.movement.moveDown
-          ? this.speed * 0.71 // diagonal speed correction
-          : this.speed
-        : this.speed;
-    let dx = 0;
-    let dy = 0;
-    if (this.movement.moveLeft) {
-      dx = -tempspeed;
-    }
-    if (this.movement.moveRight) {
-      dx = tempspeed;
-    }
-    if (this.movement.moveUp) {
-      dy = -tempspeed;
-    }
-    if (this.movement.moveDown) {
-      dy = tempspeed;
-    }
-    this.xPos += dx;
-    this.yPos += dy;
-
-    if (!(dx === 0 && dy === 0)) this.changeDirection(dx, dy);
+  update() {
+    const [dx, dy, drawler] = this.movement.move();
+    this.drawler = drawler;
+    this.movement.incrementPosition(dx, dy);
   }
   draw(ctx, viewport) {
-    ctx.save();
-    ctx.fillStyle = "black";
-    let drawX = this.cx - viewport.x;
-    let drawY = this.cy - viewport.y;
+    let drawX = this.cx;
+    let drawY = this.cy;
     if (viewport.followingX) {
       drawX = viewport.x + viewport.w / 2;
     }
     if (viewport.followingY) {
       drawY = viewport.y + viewport.h / 2;
     }
-    // before draw we need to convert player world's position to canvas position
-    // viewport.x + viewport.w / 2,
-    // viewport.y + viewport.h / 2,
-    ctx.fillRect(drawX, drawY, this.width, this.height);
-    ctx.restore();
+    this.drawler(ctx, drawX, drawY, this.width, this.height);
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.4)"; // Transparent black color
+
+    ctx.ellipse(
+      drawX + this.width / 2,
+      drawY + this.height,
+      this.width / 2,
+      this.height / 6,
+      0,
+      0,
+      Math.PI * 2
+    ); // Adjust the parameters as needed
+    ctx.fill();
   }
 }

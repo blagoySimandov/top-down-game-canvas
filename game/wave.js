@@ -18,7 +18,7 @@ export class Wave {
   }
   moveEnemies(player) {
     this.enemies.forEach((enemy) => {
-      enemy.move(player.xPos, player.yPos);
+      enemy.movement.follow(player.cx, player.cy);
     });
   }
 }

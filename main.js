@@ -1,30 +1,39 @@
-import { game } from "./game/game.js";
-import { player } from "./game/game.js";
-import { canvasConfig } from "./game/config/config.js";
+import { loadAssets, assetDetails } from "./game/animation/assets.js";
+import { canvasConfig, FPS_COUNTER_ENABLED } from "./game/config/config.js";
+
 let canvas;
 let context;
 let fpsInterval = 1000 / 30;
 let now;
 let then = Date.now();
-let requestId;
+let frames = 0;
+let fps = 0;
+
 document.addEventListener("DOMContentLoaded", init, false);
 
-function init() {
+async function init() {
   canvas = document.getElementById("root");
   canvas.width = canvasConfig.width;
   canvas.height = canvasConfig.height;
   context = canvas.getContext("2d");
   context.imageSmoothingEnabled = false;
+
+  await loadAssets(assetDetails);
+
+  const { game, playerMovement } = await import("./game/game.js");
+
   document.addEventListener("keydown", (event) =>
-    player.toggleMovement(event, true)
+    playerMovement.toggleMovement(event, true)
   );
+
   document.addEventListener("keyup", (event) =>
-    player.toggleMovement(event, false)
+    playerMovement.toggleMovement(event, false)
   );
-  draw();
+
+  draw(game);
 }
 
-function draw() {
+function draw(game) {
   now = Date.now();
   let elapsed = now - then;
 
@@ -32,8 +41,17 @@ function draw() {
     then = now - (elapsed % fpsInterval);
     context.clearRect(0, 0, canvasConfig.width, canvasConfig.height);
     game(context);
-    requestId = requestAnimationFrame(draw);
-  } else {
-    requestId = requestAnimationFrame(draw);
+
+    // fps counter
+    if (FPS_COUNTER_ENABLED) {
+      frames++;
+      if (now - fps >= 1000) {
+        console.log("FPS: ", frames);
+        fps = now;
+        frames = 0;
+      }
+    }
   }
+
+  let requestId = requestAnimationFrame(() => draw(game));
 }
