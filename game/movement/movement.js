@@ -1,6 +1,7 @@
 import { Orientation } from "../config/config.js";
-import { Animation, OrientedAnimation } from "../animation/animation.js";
-import { assets } from "../animation/assets.js";
+import { Animation, OrientedAnimation } from "../draw/animation.js";
+import { assets } from "../draw/assets.js";
+import { Vector } from "./vector.js";
 export class Movement {
   /**
    *@param {int} speed - the speed of the movement
@@ -12,14 +13,16 @@ export class Movement {
     this.speed = speed;
     this.xPos = xPos;
     this.yPos = yPos;
+    this.dx = 0;
+    this.dy = 0;
     this.orientation = Orientation[orien] || Orientation.left;
   }
   move() {
     console.error("Not Implemented");
   }
-  incrementPosition(dx, dy) {
-    this.xPos += dx;
-    this.yPos += dy;
+  incrementPosition() {
+    this.xPos += this.dx;
+    this.yPos += this.dy;
   }
   changeDirection(dx) {
     if (dx !== 0) {
@@ -39,15 +42,10 @@ export class EnemyMovement extends Movement {
    */
 
   follow(x, y) {
-    let dx = x - this.xPos;
-    let dy = y - this.yPos;
-    this.changeDirection(dx);
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    const step = this.speed / distance;
-    dx = dx * step;
-    dy = dy * step;
-    this.incrementPosition(dx, dy);
+    const direction = new Vector(this.xPos, this.yPos, x, y).normalized;
+    this.dx = direction.targetX * this.speed;
+    this.dy = direction.targetY * this.speed;
+    this.incrementPosition();
   }
 }
 export class PlayerMovement extends Movement {
@@ -57,7 +55,7 @@ export class PlayerMovement extends Movement {
       {
         frames: 8,
         currentFrame: 0,
-        skippedFrames: 0,
+        skippedFrames: 3,
       }
     );
     const plMovementAnimationLeft = new Animation(
@@ -65,7 +63,7 @@ export class PlayerMovement extends Movement {
       {
         frames: 8,
         currentFrame: 0,
-        skippedFrames: 0,
+        skippedFrames: 3,
       }
     );
     const moveAnimations = new OrientedAnimation(
@@ -75,12 +73,12 @@ export class PlayerMovement extends Movement {
 
     const plIdleAnimationRight = new Animation(assets.get("playerIdleRight"), {
       frames: 6,
-      skippedFrames: 4,
+      skippedFrames: 8,
       currentFrame: 0,
     });
     const plIdleAnimationLeft = new Animation(assets.get("playerIdleLeft"), {
       frames: 6,
-      skippedFrames: 4,
+      skippedFrames: 8,
       currentFrame: 0,
     });
     const idleAnimations = new OrientedAnimation(
@@ -97,6 +95,7 @@ export class PlayerMovement extends Movement {
       attack: false,
     };
   }
+
   toggleMovement(event, activate) {
     const key = event.code;
     if (key === "ArrowLeft") {
@@ -111,39 +110,54 @@ export class PlayerMovement extends Movement {
       this.movementKeys.attack = activate;
     }
   }
+  changeDirectionByFollowX(cursorX) {
+    if (cursorX < this.xPos) {
+      this.orientation = Orientation.left;
+    } else if (cursorX > this.xPos) {
+      this.orientation = Orientation.right;
+    }
+  }
   move() {
-    let tempspeed =
-      this.movementKeys.moveLeft || this.movementKeys.moveRight
-        ? this.movementKeys.moveUp || this.movementKeys.moveDown
-          ? this.speed * 0.71 // diagonal speed correction
-          : this.speed
-        : this.speed;
+    [this.dx, this.dy] = this.getPosChange();
+    this.incrementPosition();
+    if (this.dx === 0 && this.dy === 0) {
+      const drawer =
+        this.idleAnimation[
+          this.orientation === Orientation.right ? "rightAnim" : "leftAnim"
+        ].getAnimationDrawer();
+      return [this.dx, this.dy, drawer];
+    }
+    const drawer =
+      this.moveAnimation[
+        this.orientation === Orientation.right ? "rightAnim" : "leftAnim"
+      ].getAnimationDrawer();
+
+    return [this.dx, this.dy, drawer];
+  }
+
+  getPosChange() {
     let dx = 0;
     let dy = 0;
+
     if (this.movementKeys.moveLeft) {
-      dx = -tempspeed;
+      dx -= this.speed;
     }
     if (this.movementKeys.moveRight) {
-      dx = tempspeed;
+      dx += this.speed;
     }
     if (this.movementKeys.moveUp) {
-      dy = -tempspeed;
+      dy -= this.speed;
     }
     if (this.movementKeys.moveDown) {
-      dy = tempspeed;
+      dy += this.speed;
     }
-    if (dx === 0 && dy === 0) {
-      const drawler =
-        this.orientation === Orientation.right
-          ? this.idleAnimation.rightAnim.getAnimationDrawler()
-          : this.idleAnimation.leftAnim.getAnimationDrawler();
-      return [dx, dy, drawler];
+
+    if (dx !== 0 && dy !== 0) {
+      const diagonalSpeed = (this.speed * Math.sqrt(2)) / 2;
+      dx *= diagonalSpeed / this.speed;
+      dy *= diagonalSpeed / this.speed;
     }
-    super.changeDirection(dx);
-    const drawler =
-      this.orientation === Orientation.right
-        ? this.moveAnimation.rightAnim.getAnimationDrawler()
-        : this.moveAnimation.leftAnim.getAnimationDrawler();
-    return [dx, dy, drawler];
+
+    return [dx, dy];
   }
 }

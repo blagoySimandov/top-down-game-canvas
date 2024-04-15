@@ -1,4 +1,4 @@
-import { loadAssets, assetDetails } from "./game/animation/assets.js";
+import { loadAssets, assetDetails } from "./game/draw/assets.js";
 import { canvasConfig, FPS_COUNTER_ENABLED } from "./game/config/config.js";
 
 let canvas;
@@ -17,11 +17,10 @@ async function init() {
   canvas.height = canvasConfig.height;
   context = canvas.getContext("2d");
   context.imageSmoothingEnabled = false;
-
   await loadAssets(assetDetails);
 
-  const { game, playerMovement } = await import("./game/game.js");
-
+  const { game, playerMovement, cursor } = await import("./game/game.js");
+  cursor.init(canvas);
   document.addEventListener("keydown", (event) =>
     playerMovement.toggleMovement(event, true)
   );

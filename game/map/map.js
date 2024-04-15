@@ -26,15 +26,11 @@ export class Map {
   }
   standsOn(x, y) {
     if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
-      // Convert coordinates to grid indices
       const c = Math.floor(x / this.tileSize);
       const r = Math.floor(y / this.tileSize);
-      // Get the tile at the specified position
       const tile = this.getTile(c, r);
-      // Return true if the tile is not empty (standing on a tile)
       return tile !== -1;
     } else {
-      // Coordinates are outside the map boundaries
       return false;
     }
   }

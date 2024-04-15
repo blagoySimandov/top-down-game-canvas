@@ -7,6 +7,11 @@ export const assetDetails = {
     path: "/game/sprites/playerMovementRight.png",
     orientation: Orientation.right,
   },
+
+  crosshair1: {
+    path: "/game/sprites/crosshair1.png",
+    orientation: Orientation.right,
+  },
   playerMovementLeft: {
     path: "/game/sprites/playerMovementLeft.png",
     orientation: Orientation.left,
@@ -18,6 +23,14 @@ export const assetDetails = {
   playerIdleRight: {
     path: "/game/sprites/playerIdleRight.png",
     orientation: Orientation.Right,
+  },
+  bullet: {
+    path: "/game/sprites/bullet.png",
+    orientation: Orientation.Right,
+  },
+  rifle: {
+    path: "/game/sprites/rifle.png",
+    orientation: Orientation.right,
   },
 };
 export async function loadAssets(assetDetails) {

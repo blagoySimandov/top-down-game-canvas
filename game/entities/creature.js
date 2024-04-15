@@ -1,12 +1,12 @@
-import { canvasConfig } from "../config/config.js";
+import { Orientation, canvasConfig } from "../config/config.js";
 import {
   PlayerMovement,
   EnemyMovement,
   Movement,
 } from "../movement/movement.js";
 import { resolveCollision, boxCollision } from "../utils.js";
-import { Animation } from "../animation/animation.js";
-import { Weapon } from "./weapon.js";
+import { Animation } from "../draw/animation.js";
+import { Rifle } from "./weapon.js";
 import { getRandomInt } from "../utils.js";
 export class Creature {
   /**
@@ -22,10 +22,10 @@ export class Creature {
     this.sprite = sprite;
   } //center x
   get cx() {
-    return this.movement.xPos + this.width * 0.5;
+    return this.movement.xPos - this.width / 2;
   } //center y
   get cy() {
-    return this.movement.yPos + this.height * 0.5;
+    return this.movement.yPos - this.height / 2;
   }
   draw(ctx) {
     ctx.fillStyle = this.color;
@@ -119,16 +119,25 @@ export class Player extends Creature {
   constructor(xPos, yPos, width, height, speed, sprite) {
     const movement = new PlayerMovement(speed, xPos, yPos);
     super(width, height, movement, sprite);
-    this.drawler = null;
-    this.weapon = new Weapon(10, 1);
+    this.drawer = null; //default
+    console.log(xPos, yPos);
+    this.weapon = new Rifle(xPos, yPos); //default weapon;
   }
 
-  update() {
-    const [dx, dy, drawler] = this.movement.move();
-    this.drawler = drawler;
-    this.movement.incrementPosition(dx, dy);
+  update(cursor, bullets) {
+    this.movement.changeDirectionByFollowX(cursor.gameX, this.xPos);
+    const shotResult = this.weapon.shoot(
+      cursor,
+      this.movement.xPos,
+      this.movement.yPos
+    );
+    if (shotResult) {
+      bullets?.push(shotResult);
+    }
+    const [, , drawer] = this.movement.move(); //omitting dx,dy
+    this.drawer = drawer;
   }
-  draw(ctx, viewport) {
+  drawChar(ctx, viewport) {
     let drawX = this.cx;
     let drawY = this.cy;
     if (viewport.followingX) {
@@ -137,19 +146,25 @@ export class Player extends Creature {
     if (viewport.followingY) {
       drawY = viewport.y + viewport.h / 2;
     }
-    this.drawler(ctx, drawX, drawY, this.width, this.height);
-    ctx.beginPath();
-    ctx.fillStyle = "rgba(0, 0, 0, 0.4)"; // Transparent black color
-
-    ctx.ellipse(
-      drawX + this.width / 2,
-      drawY + this.height,
-      this.width / 2,
-      this.height / 6,
-      0,
-      0,
-      Math.PI * 2
-    ); // Adjust the parameters as needed
-    ctx.fill();
+    this.drawer(ctx, drawX, drawY, this.width, this.height);
+  }
+  draw(ctx, viewport, cursor) {
+    this.update(cursor.gameX);
+    if (this.movement.orientation === Orientation.right) {
+      this.drawChar(ctx, viewport);
+      this.drawWeapon(ctx, cursor);
+    } else {
+      this.drawWeapon(ctx, cursor);
+      this.drawChar(ctx, viewport);
+    }
+  }
+  drawWeapon(ctx, cursor) {
+    this.weapon.draw(
+      ctx,
+      this.movement.xPos,
+      this.movement.yPos,
+      this.height,
+      cursor
+    );
   }
 }

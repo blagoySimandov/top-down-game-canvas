@@ -1,3 +1,4 @@
+import { Drawer } from "./draw.js";
 export class Animation {
   /**@param {Sprite} keyframes - Sprite with the keyframes in a horizontal manner.
    * @param {int} frames - number of frames each sprite gets, the default is one.
@@ -14,9 +15,9 @@ export class Animation {
   }
   /**Starts the animation.
    */
-  getAnimationDrawler() {
+  getAnimationDrawer() {
     if (this.currentFrame < this.maxFrame) {
-      const drawler = Drawler.getCroppedImageDrawer(
+      const drawer = Drawer.getCroppedImageDrawer(
         this.keyframes,
         this.cropWidth,
         this.currentFrame
@@ -27,10 +28,10 @@ export class Animation {
       } else {
         this.currentSkippedFrames -= 1;
       }
-      return drawler;
+      return drawer;
     }
     this.currentFrame = 0;
-    return Drawler.getCroppedImageDrawer(
+    return Drawer.getCroppedImageDrawer(
       this.keyframes,
       this.cropWidth,
       this.currentFrame
@@ -49,41 +50,6 @@ export class Sprite {
   constructor(image, orientation) {
     this.image = image;
     this.orientation = orientation;
-  }
-}
-
-export class Drawler {
-  constructor() {
-    return (ctx, drawX, drawY, width, height) => {
-      ctx.save();
-      ctx.fillStyle = "black";
-      ctx.fillRect(drawX, drawY, width, height);
-      ctx.restore();
-    };
-  }
-  /**
-   * @param {Sprite}sprite - sprite to be cropped
-   * @param {int}widthOfSingleDivision - sets the width of a divison
-   * @param {int} nth - sets which image to get*/
-  static getCroppedImageDrawer(sprite, widthOfSingleDivision, nth) {
-    return (ctx, posX, posY, width, height) => {
-      // Determine if rotation is needed
-      const startX = widthOfSingleDivision * nth;
-      const cropWidth = Math.min(
-        widthOfSingleDivision,
-        sprite.image.width - startX
-      );
-      ctx.drawImage(
-        sprite.image,
-        startX,
-        0,
-        cropWidth,
-        sprite.image.height,
-        posX,
-        posY,
-        width,
-        height
-      );
-    };
+    this.ratioHW = this.image.height / this.image.width;
   }
 }
