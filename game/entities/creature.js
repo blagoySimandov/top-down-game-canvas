@@ -52,13 +52,14 @@ export class Enemy extends Creature {
   constructor({ xPos, yPos, width, height, id }, speed) {
     const movemementSpeed = speed || 10;
     const enemyMovementAnimation = new Animation(null, {});
+    this.drawer = null; //settig the drawer to null at first. It will we overridden anyway
     const movement = new EnemyMovement(
       movemementSpeed,
       enemyMovementAnimation,
       xPos,
       yPos
     );
-    super(width, height, movement);
+    super(width, height, movement, sprite);
     this.color = "red";
     this.id = id || -1;
   }
@@ -120,8 +121,7 @@ export class Player extends Creature {
     const movement = new PlayerMovement(speed, xPos, yPos);
     super(width, height, movement, sprite);
     this.drawer = null; //default
-    console.log(xPos, yPos);
-    this.weapon = new Rifle(xPos, yPos); //default weapon;
+    this.weapon = new Rifle(xPos, yPos, this.height); //default weapon;
   }
 
   update(cursor, bullets) {
@@ -134,7 +134,8 @@ export class Player extends Creature {
     if (shotResult) {
       bullets?.push(shotResult);
     }
-    const [, , drawer] = this.movement.move(); //omitting dx,dy
+    const [dx, dy, drawer] = this.movement.move(); //omitting dx,dy
+    this.weapon.updatePos(dx, dy);
     this.drawer = drawer;
   }
   drawChar(ctx, viewport) {
@@ -149,22 +150,17 @@ export class Player extends Creature {
     this.drawer(ctx, drawX, drawY, this.width, this.height);
   }
   draw(ctx, viewport, cursor) {
-    this.update(cursor.gameX);
+    if (this.drawer == null) {
+      return;
+    }
     if (this.movement.orientation === Orientation.right) {
       this.drawChar(ctx, viewport);
-      this.drawWeapon(ctx, cursor);
+
+      this.weapon.draw(ctx, cursor);
     } else {
-      this.drawWeapon(ctx, cursor);
+      this.weapon.draw(ctx, cursor);
+
       this.drawChar(ctx, viewport);
     }
-  }
-  drawWeapon(ctx, cursor) {
-    this.weapon.draw(
-      ctx,
-      this.movement.xPos,
-      this.movement.yPos,
-      this.height,
-      cursor
-    );
   }
 }

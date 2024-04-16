@@ -7,7 +7,10 @@ export const assetDetails = {
     path: "/game/sprites/playerMovementRight.png",
     orientation: Orientation.right,
   },
-
+  muzzle: {
+    path: "/game/sprites/muzzle.png",
+    orientation: Orientation.right,
+  },
   crosshair1: {
     path: "/game/sprites/crosshair1.png",
     orientation: Orientation.right,

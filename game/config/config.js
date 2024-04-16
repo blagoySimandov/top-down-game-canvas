@@ -4,7 +4,6 @@ export const canvasConfig = {
 };
 export const tileSize = 16;
 export const scaledTileSize = 32;
-//by doing this we can add left + down and get downLeft
 export const Orientation = Object.freeze({
   left: 0,
   right: 1,

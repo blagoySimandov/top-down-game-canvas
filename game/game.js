@@ -7,8 +7,7 @@ import { Cursor } from "./cursor/cursor.js";
 
 //globals are created on module load
 //Should be in factory, but im lazy.
-const player = new Player(525, 375, 70, 100, 6, assets.get("playerMovement"));
-//since js passes things by pointer instead of value the line below is correct.
+const player = new Player(525, 375, 70, 100, 10, assets.get("playerMovement"));
 export const playerMovement = player.movement;
 const weapon = player.weapon;
 const map = new Map();
@@ -19,7 +18,7 @@ const waves = [];
  */
 const bullets = [];
 export const cursor = new Cursor(weapon);
-setInterval(() => waves.push(new Wave(1, 100, player)), 100); //Simple wave system
+setInterval(() => waves.push(new Wave(3, 100, player)), 3000); //Simple wave system
 function gameLogic(ctx, viewport) {
   bullets.forEach((bullet, index) => {
     if (!bullet.isOutOfBounds(viewport)) {
@@ -29,17 +28,21 @@ function gameLogic(ctx, viewport) {
       bullets.splice(index, 1);
     }
   });
-  player.update(cursor, bullets);
+
   player.draw(ctx, viewport, cursor);
 
-  // const totalEnemies = [];
+  cursor.setGamePos(cursor.x + camera.viewport.x, cursor.y + camera.viewport.y);
+  cursor.draw(ctx);
+  player.update(cursor, bullets);
 
-  // waves.forEach((wave) => {
-  //   wave.draw(ctx);
-  //   wave.moveEnemies(player);
-  //   totalEnemies.push(...wave.enemies);
-  // });
-  // enemyCollision(totalEnemies);
+  const totalEnemies = [];
+
+  waves.forEach((wave) => {
+    wave.draw(ctx);
+    wave.moveEnemies(player);
+    totalEnemies.push(...wave.enemies);
+  });
+  enemyCollision(totalEnemies);
 }
 
 /**
@@ -59,8 +62,6 @@ export function game(ctx) {
   //easier to manage with translate
   map.drawMap(ctx, camera.viewport);
   ctx.translate(-camera.viewport.x, -camera.viewport.y);
-  cursor.setGamePos(cursor.x + camera.viewport.x, cursor.y + camera.viewport.y);
-  cursor.draw(ctx);
   gameLogic(ctx, camera.viewport);
   camera.viewport.draw(ctx);
   ctx.restore();

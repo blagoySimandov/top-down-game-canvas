@@ -73,12 +73,12 @@ export class PlayerMovement extends Movement {
 
     const plIdleAnimationRight = new Animation(assets.get("playerIdleRight"), {
       frames: 6,
-      skippedFrames: 8,
+      skippedFrames: 10,
       currentFrame: 0,
     });
     const plIdleAnimationLeft = new Animation(assets.get("playerIdleLeft"), {
       frames: 6,
-      skippedFrames: 8,
+      skippedFrames: 10,
       currentFrame: 0,
     });
     const idleAnimations = new OrientedAnimation(
