@@ -1,15 +1,10 @@
 import { Orientation } from "../config/config.js";
-import { Animation, OrientedAnimation } from "../draw/animation.js";
-import { assets } from "../draw/assets.js";
 import { Vector } from "./vector.js";
 export class Movement {
   /**
    *@param {int} speed - the speed of the movement
-   *@param {OrientedAnimation} moveAnimation - collection of left and Right animations for the movement*/
-  constructor(speed, moveAnimation, xPos, yPos, orien, idleAnimation) {
-    this.moveAnimation = moveAnimation;
-    this.moveAnimation.Prototype;
-    this.idleAnimation = idleAnimation;
+   **/
+  constructor(speed, xPos, yPos, orien) {
     this.speed = speed;
     this.xPos = xPos;
     this.yPos = yPos;
@@ -30,11 +25,19 @@ export class Movement {
       this.orientation = xDir;
     }
   }
+  changeDirectionByFollowX(x) {
+    if (x < this.xPos) {
+      this.orientation = Orientation.left;
+    } else if (x > this.xPos) {
+      this.orientation = Orientation.right;
+    }
+  }
 }
 
 export class EnemyMovement extends Movement {
-  constructor(speed, animation, xPos, yPos, orien) {
-    super(speed, animation, xPos, yPos, orien);
+  constructor(speed, xPos, yPos, orien) {
+    //orien has default
+    super(speed, xPos, yPos, orien);
   }
   /**moves the enemy towards a certain position. Used for chasing the player
    * @param {int} x
@@ -45,47 +48,14 @@ export class EnemyMovement extends Movement {
     const direction = new Vector(this.xPos, this.yPos, x, y).normalized;
     this.dx = direction.targetX * this.speed;
     this.dy = direction.targetY * this.speed;
+    this.changeDirectionByFollowX(x);
     this.incrementPosition();
+    return [this.dx, this.dy]; //not sure why im returning them instead of acessing them but seems cleaner this way (not sure.?)
   }
 }
 export class PlayerMovement extends Movement {
   constructor(speed, xPos, yPos, orien) {
-    const plMovementAnimationRight = new Animation(
-      assets.get("playerMovementRight"),
-      {
-        frames: 8,
-        currentFrame: 0,
-        skippedFrames: 3,
-      }
-    );
-    const plMovementAnimationLeft = new Animation(
-      assets.get("playerMovementLeft"),
-      {
-        frames: 8,
-        currentFrame: 0,
-        skippedFrames: 3,
-      }
-    );
-    const moveAnimations = new OrientedAnimation(
-      plMovementAnimationLeft,
-      plMovementAnimationRight
-    );
-
-    const plIdleAnimationRight = new Animation(assets.get("playerIdleRight"), {
-      frames: 6,
-      skippedFrames: 10,
-      currentFrame: 0,
-    });
-    const plIdleAnimationLeft = new Animation(assets.get("playerIdleLeft"), {
-      frames: 6,
-      skippedFrames: 10,
-      currentFrame: 0,
-    });
-    const idleAnimations = new OrientedAnimation(
-      plIdleAnimationLeft,
-      plIdleAnimationRight
-    );
-    super(speed, moveAnimations, xPos, yPos, orien, idleAnimations);
+    super(speed, xPos, yPos, orien);
     //prob should be a const at the top.
     this.movementKeys = {
       moveLeft: false,
@@ -98,13 +68,13 @@ export class PlayerMovement extends Movement {
 
   toggleMovement(event, activate) {
     const key = event.code;
-    if (key === "ArrowLeft") {
+    if (key === "KeyA") {
       this.movementKeys.moveLeft = activate;
-    } else if (key === "ArrowRight") {
+    } else if (key === "KeyD") {
       this.movementKeys.moveRight = activate;
-    } else if (key === "ArrowUp") {
+    } else if (key === "KeyW") {
       this.movementKeys.moveUp = activate;
-    } else if (key === "ArrowDown") {
+    } else if (key === "KeyS") {
       this.movementKeys.moveDown = activate;
     } else if (key === "KeyZ") {
       this.movementKeys.attack = activate;
@@ -120,19 +90,7 @@ export class PlayerMovement extends Movement {
   move() {
     [this.dx, this.dy] = this.getPosChange();
     this.incrementPosition();
-    if (this.dx === 0 && this.dy === 0) {
-      const drawer =
-        this.idleAnimation[
-          this.orientation === Orientation.right ? "rightAnim" : "leftAnim"
-        ].getAnimationDrawer();
-      return [this.dx, this.dy, drawer];
-    }
-    const drawer =
-      this.moveAnimation[
-        this.orientation === Orientation.right ? "rightAnim" : "leftAnim"
-      ].getAnimationDrawer();
-
-    return [this.dx, this.dy, drawer];
+    return [this.dx, this.dy];
   }
 
   getPosChange() {

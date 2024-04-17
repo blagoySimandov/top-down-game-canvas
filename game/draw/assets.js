@@ -7,6 +7,14 @@ export const assetDetails = {
     path: "/game/sprites/playerMovementRight.png",
     orientation: Orientation.right,
   },
+  enemy1Left: {
+    path: "/game/sprites/enemy1Left.png",
+    orientation: Orientation.right,
+  },
+  enemy1Right: {
+    path: "/game/sprites/enemy1Right.png",
+    orientation: Orientation.right,
+  },
   muzzle: {
     path: "/game/sprites/muzzle.png",
     orientation: Orientation.right,
@@ -17,6 +25,18 @@ export const assetDetails = {
   },
   playerMovementLeft: {
     path: "/game/sprites/playerMovementLeft.png",
+    orientation: Orientation.left,
+  },
+  bulletAnim: {
+    path: "/game/sprites/bulletAnim.png",
+    orientation: Orientation.left,
+  },
+  bloodSplatter30: {
+    path: "/game/sprites/bloodSplatter30.png",
+    orientation: Orientation.left,
+  },
+  bulletDeathAnim: {
+    path: "/game/sprites/bulletDeathAnim.png",
     orientation: Orientation.left,
   },
   playerIdleLeft: {

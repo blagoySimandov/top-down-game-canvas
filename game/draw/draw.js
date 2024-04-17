@@ -11,10 +11,21 @@ export class Drawer {
    * @param {Sprite}sprite - sprite to be cropped
    * @param {int}widthOfSingleDivision - sets the width of a divison
    * @param {int} nth - sets which image to get*/
-  static getCroppedImageDrawer(sprite, widthOfSingleDivision, nth, debug) {
-    return (ctx, posX, posY, width, height) => {
+  static getCroppedImageDrawer(sprite, widthOfSingleDivision, nth) {
+    /**
+
+      *@param {canvasContext} ctx @param {number} posX @param {number} posY @param {number} width @param {number} height  canvas context for drawing.
+      *@param {boolean} debug - indicates whetherdebug mode is enabled (optional).
+*/
+    return (ctx, posX, posY, width, height, debug) => {
       if (debug) {
-        console.log(posX, posY, width, height, widthOfSingleDivision);
+        console.log(
+          "posX: " + posX,
+          "posY: " + posY,
+          "width: " + width,
+          "height: " + height,
+          "widthOfSingleDivision: " + widthOfSingleDivision
+        );
       }
       const startX = widthOfSingleDivision * nth;
       const cropWidth = Math.min(

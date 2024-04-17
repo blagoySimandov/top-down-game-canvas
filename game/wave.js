@@ -8,17 +8,15 @@ export class Wave {
     );
     this.timeInterval = timeInterval;
   }
-  destroyEnemy(id) {
-    delete this.enemies[id];
-  }
   draw(ctx) {
     this.enemies.forEach((enemy) => {
       enemy.draw(ctx);
     });
   }
-  moveEnemies(player) {
+  /**@param {Player} player */
+  update(player) {
     this.enemies.forEach((enemy) => {
-      enemy.movement.follow(player.cx, player.cy);
+      enemy.update(player.movement.xPos, player.movement.yPos);
     });
   }
 }

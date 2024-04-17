@@ -3,14 +3,16 @@ export class Animation {
   /**@param {Sprite} keyframes - Sprite with the keyframes in a horizontal manner.
    * @param {int} frames - number of frames each sprite gets, the default is one.
    * @param {int} currentFrame - The current animation  frame*/
-  constructor(keyframes, { frames, currentFrame, skippedFrames }) {
+  constructor(keyframes, { frames, currentFrame, skippedFrames, endFrame }) {
     if (keyframes) {
-      this.currentFrame = currentFrame || 0;
+      this.currentFrame = currentFrame;
       this.keyframes = keyframes;
-      this.cropWidth = Math.floor(keyframes.image.width / frames);
-      this.maxFrame = frames;
+      this.cropWidth = Math.ceil(keyframes.image.width / frames);
+      this.maxFrame = endFrame || frames;
       this.skippedFrames = skippedFrames || 0;
       this.currentSkippedFrames = this.skippedFrames;
+
+      this.ratioHW = this.keyframes.image.height / this.cropWidth; //Shoud get the correct ratio of each keyframe
     }
   }
   /**Starts the animation.

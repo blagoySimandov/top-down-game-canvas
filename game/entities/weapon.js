@@ -1,4 +1,5 @@
 import { assets } from "../draw/assets.js";
+import { Animation } from "../draw/animation.js";
 import { Drawer } from "../draw/draw.js";
 import { Vector } from "../movement/vector.js";
 class Weapon {
@@ -20,7 +21,7 @@ class Weapon {
   }
   shoot(cursor, x, y) {
     if (this.weaponActivate) {
-      const bullet = new Bullet(this.dmg, 30, x, y, cursor.gameX, cursor.gameY);
+      const bullet = new Bullet(this.dmg, 33, x, y, cursor.gameX, cursor.gameY);
       this.weaponActivate = false;
       return bullet;
     }
@@ -39,10 +40,10 @@ class Weapon {
 }
 
 class Bullet {
-  constructor(damage, speed, originX, originY, targetX, targetY) {
-    this.damage = damage;
-    this.speed = speed;
+  constructor(dmg, speed, originX, originY, targetX, targetY) {
+    this.dmg = dmg;
 
+    this.speed = speed;
     this.framesBuffer = 2;
     this.sprite = assets.get("bullet");
     this.targetWidth = this.sprite.image.width / 50;
@@ -51,13 +52,43 @@ class Bullet {
     targetY -= this.targetHeight / 2;
     this.y = originY; //initial
     this.x = originX; //initial
-
+    this.animation = new Animation(assets.get("bulletAnim"), {
+      frames: 5,
+      currentFrame: 0,
+      skippedFrames: 0,
+    });
+    this.deathAnimation = new Animation(assets.get("bulletDeathAnim"), {
+      frames: 5,
+      currentFrame: 0,
+      skippedFrames: 0,
+    });
     this.directionVector = new Vector(originX, originY, targetX, targetY);
-    this.drawer = Drawer.getCroppedImageDrawer(
-      this.sprite,
-      this.sprite.image.width,
-      0
-    );
+    /**
+     * @type {Function}
+     */
+    this.drawer = null;
+    this.active = true;
+  }
+
+  collidesWithEnemies(totalEnemies) {
+    let enemyIndexes = [];
+    totalEnemies.forEach((enemy, index) => {
+      //ugly but i dont have time to this properly
+      if (!enemy.active) return;
+      if (
+        enemy.collisionDetect({
+          movement: {
+            xPos: this.x,
+            yPos: this.y,
+          },
+          width: this.targetWidth,
+          height: this.targetHeight,
+        })
+      ) {
+        enemyIndexes.push(index);
+      }
+    });
+    return enemyIndexes;
   }
   isOutOfBounds(viewport) {
     const leeway = 100;
@@ -69,6 +100,7 @@ class Bullet {
     );
   }
   updatePosition() {
+    if (!this.active) return;
     const normalizedVector = this.directionVector.normalized;
     const bulletSpeed = this.speed;
     const dx = normalizedVector.targetX * bulletSpeed;
@@ -82,6 +114,9 @@ class Bullet {
       this.framesBuffer -= 1;
       return;
     }
+    this.drawer = this.active
+      ? this.animation.getAnimationDrawer()
+      : this.deathAnimation.getAnimationDrawer();
     this.drawer(ctx, this.x, this.y, this.targetWidth, this.targetHeight);
   }
 }
@@ -98,7 +133,7 @@ export class Rifle extends Weapon {
     this.targetWidth = this.targetHeight / sprite.ratioHW;
   }
   draw(ctx, cursor) {
-    //TODO: Needs refactor
+    //TODO: Angle calc needs refactor
     const [angle, isCursorLeft] = this.calculateOrientation(
       this.x,
       this.y,
@@ -127,11 +162,11 @@ export class Rifle extends Weapon {
 }
 
 class Muzzle {
-  constructor(x, y) {
-    this.weaponTipX = 30; //relative
+  constructor() {
+    this.weaponTipX = 30; //relative to weapon.
     this.weaponTipY = -36; //relative
     this.skippedFrame = 1;
-    this.frameBuffer = 2;
+    this.frameBuffer = 2; //shouldnt be here
     this.sprite = assets.get("muzzle");
     this.targetHeight = 38;
     this.targetWidth = this.targetHeight / this.sprite.ratioHW;
