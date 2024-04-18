@@ -8,4 +8,4 @@ export const Orientation = Object.freeze({
   left: 0,
   right: 1,
 });
-export const FPS_COUNTER_ENABLED = true;
+export const FPS_COUNTER_ENABLED = false;

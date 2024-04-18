@@ -52,5 +52,5 @@ function draw(game) {
     }
   }
 
-  let _ = requestAnimationFrame(() => draw(game));
+  requestAnimationFrame(() => draw(game));
 }

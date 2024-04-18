@@ -4,59 +4,59 @@ import { Sprite } from "./animation.js";
 export const assets = new Map();
 export const assetDetails = {
   playerMovementRight: {
-    path: "/game/sprites/playerMovementRight.png",
+    path: "./game/sprites/playerMovementRight.png",
     orientation: Orientation.right,
   },
   enemy1Left: {
-    path: "/game/sprites/enemy1Left.png",
+    path: "./game/sprites/enemy1Left.png",
     orientation: Orientation.right,
   },
   enemy1Right: {
-    path: "/game/sprites/enemy1Right.png",
+    path: "./game/sprites/enemy1Right.png",
     orientation: Orientation.right,
   },
   muzzle: {
-    path: "/game/sprites/muzzle.png",
+    path: "./game/sprites/muzzle.png",
     orientation: Orientation.right,
   },
   crosshair1: {
-    path: "/game/sprites/crosshair1.png",
+    path: "./game/sprites/crosshair1.png",
     orientation: Orientation.right,
   },
   playerMovementLeft: {
-    path: "/game/sprites/playerMovementLeft.png",
+    path: "./game/sprites/playerMovementLeft.png",
     orientation: Orientation.left,
   },
   bulletAnim: {
-    path: "/game/sprites/bulletAnim.png",
+    path: "./game/sprites/bulletAnim.png",
     orientation: Orientation.left,
   },
   bloodSplatter30: {
-    path: "/game/sprites/bloodSplatter30.png",
+    path: "./game/sprites/bloodSplatter30.png",
     orientation: Orientation.left,
   },
   tileset: {
-    path: "/game/map/tileset.png",
+    path: "./game/map/tileset.png",
     orientation: null,
   },
   bulletDeathAnim: {
-    path: "/game/sprites/bulletDeathAnim.png",
+    path: "./game/sprites/bulletDeathAnim.png",
     orientation: Orientation.left,
   },
   playerIdleLeft: {
-    path: "/game/sprites/playerIdleLeft.png",
+    path: "./game/sprites/playerIdleLeft.png",
     orientation: Orientation.left,
   },
   playerIdleRight: {
-    path: "/game/sprites/playerIdleRight.png",
+    path: "./game/sprites/playerIdleRight.png",
     orientation: Orientation.Right,
   },
   bullet: {
-    path: "/game/sprites/bullet.png",
+    path: "./game/sprites/bullet.png",
     orientation: Orientation.Right,
   },
   rifle: {
-    path: "/game/sprites/rifle.png",
+    path: "./game/sprites/rifle.png",
     orientation: Orientation.right,
   },
 };

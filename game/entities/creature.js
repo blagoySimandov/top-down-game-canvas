@@ -33,6 +33,7 @@ export class Creature {
     this.moveAnimation = moveAnimation;
     this.idleAnimation = idleAnimation;
     this.hp = hp;
+    this.maxhp = hp;
     this.deathAnimation = deathAnimation;
     this.active = active;
     this.drawer = null; //will get overridden; adding it here for the sake of docs
@@ -75,7 +76,12 @@ export class Creature {
 }
 
 export class Enemy extends Creature {
-  constructor({ xPos, yPos, width, height, id, score }, speed, hp, dmg) {
+  constructor(
+    { xPos, yPos, width, height, id, score, hardness },
+    speed,
+    hp,
+    dmg
+  ) {
     const movemementSpeed = speed || 10;
 
     const enemyAnimationRight = new Animation(assets.get("enemy1Right"), {
@@ -112,6 +118,8 @@ export class Enemy extends Creature {
     this.id = id || -1;
     this.score = score;
     this.dmg = dmg;
+    this.hue = getRandomInt(1, 360);
+    this.sat = getRandomInt(1, hardness * 50);
   }
   /**
    * @param {Enemy} enemy
@@ -127,7 +135,7 @@ export class Enemy extends Creature {
   }
 
   /** spawns and enemy at a random postion on the edge of the screen*/
-  static spawn(id, player) {
+  static spawn(id, player, hardness) {
     const side = Math.floor(Math.random() * 4);
     const enemyHeight = 90;
 
@@ -168,9 +176,9 @@ export class Enemy extends Creature {
         yPos = yRandom;
         break;
     }
-    const speed = getRandomInt(0, 10);
-    const dmg = getRandomInt(5, 20);
-    const hp = getRandomInt(0, 50);
+    const speed = getRandomInt(3, 4 + hardness / 2.7);
+    const dmg = getRandomInt(5, 20 + hardness);
+    const hp = getRandomInt(10, 20 + hardness);
     return new Enemy(
       {
         xPos: xPos,
@@ -179,6 +187,7 @@ export class Enemy extends Creature {
         height: enemyHeight,
         id: id,
         score: 100,
+        hardness: hardness,
       },
       speed,
       hp,
@@ -210,7 +219,15 @@ export class Enemy extends Creature {
       );
       return;
     }
+    ctx.filter = `saturate(${this.sat})`;
+    ctx.filter = `hue-rotate(${this.hue}deg)`;
     this.drawer(ctx, drawX, drawY, this.width, this.height);
+    ctx.filter = "none";
+    //should be in the drawer class
+    ctx.fillStyle = "red";
+    const healthBar = this.width * (this.hp / this.maxhp);
+    ctx.fillRect(drawX, drawY - 10, healthBar, 10);
+    ctx.strokeRect(drawX, drawY - 10, this.width, 10);
   }
 }
 
@@ -284,11 +301,19 @@ export class Player extends Creature {
       bullets?.push(shotResult);
     }
     if (this.hp <= 0) this.active = false;
-    const [dx, dy] = this.movement.move(mapDimensions, this.active);
+    const [dx, dy, isOutOfMap] = this.movement.move(
+      mapDimensions,
+      this.active,
+      this.width,
+      this.height
+    );
     this.drawer = this.active
       ? this.getCorrectOrientedDrawer(dx, dy)
       : this.deathAnimation.getAnimationDrawer();
-    this.weapon.updatePos(dx, dy);
+
+    if (!isOutOfMap?.at(0)) this.weapon.updatePos(0, dy, mapDimensions);
+    else if (!isOutOfMap?.at(1)) this.weapon.updatePos(dx, 0, mapDimensions);
+    else this.weapon.updatePos(dx, dy, mapDimensions);
   }
   drawChar(ctx, viewport) {
     //... currentFrame shouldnt have started from zero...

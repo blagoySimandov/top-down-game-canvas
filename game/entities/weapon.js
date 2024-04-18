@@ -170,7 +170,6 @@ class Muzzle {
     this.sprite = assets.get("muzzle");
     this.targetHeight = 38;
     this.targetWidth = this.targetHeight / this.sprite.ratioHW;
-    console.log(this.sprite.image.width);
     this.drawer = Drawer.getCroppedImageDrawer(
       this.sprite,
       this.sprite.image.width,

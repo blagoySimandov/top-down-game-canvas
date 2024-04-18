@@ -86,23 +86,32 @@ export class PlayerMovement extends Movement {
       this.orientation = Orientation.right;
     }
   }
-  incrementPlayerPosition(mapWidth, mapHeight) {
+  incrementPlayerPosition(mapWidth, mapHeight, width, height) {
     const nextX = this.xPos + this.dx;
     const nextY = this.yPos + this.dy;
-
-    if (nextX >= 0 && nextX < mapWidth) {
+    let isOutX = false;
+    let isOutY = false;
+    if (nextX >= 0 && nextX < mapWidth - width) {
+      isOutX = true;
       this.xPos = nextX;
     }
-    if (nextY >= 0 && nextY < mapHeight) {
+    if (nextY >= 0 && nextY < mapHeight - height) {
+      isOutY = true;
       this.yPos = nextY;
     }
+    return [isOutX, isOutY];
   }
 
-  move(mapDimensions, active) {
+  move(mapDimensions, active, width, height) {
     if (!active) return [0, 0];
     [this.dx, this.dy] = this.getPosChange();
-    this.incrementPosition(mapDimensions[0], mapDimensions[1]);
-    return [this.dx, this.dy];
+    const isOutOfMap = this.incrementPlayerPosition(
+      mapDimensions[0],
+      mapDimensions[1],
+      width,
+      height
+    );
+    return [this.dx, this.dy, isOutOfMap];
   }
 
   getPosChange() {

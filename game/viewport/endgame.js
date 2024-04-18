@@ -20,22 +20,9 @@ export default class EndGameScreen {
       this.playAgain = true;
     }
   }
-  draw(ctx) {
-    if (!this.active) return;
-    ctx.font = "50px Times New Roman";
-    ctx.fillStyle = "black";
-    const mainText = "GAME OVER";
+  drawPlayAgain(ctx, xMain, yMain, textWidth) {
     const playagain = "Play Again";
-    const textWidth = ctx.measureText(mainText).width;
     const playAgainW = ctx.measureText(playagain).width;
-
-    const offsetY = 30;
-    const xMain = this.viewportWidth / 2 - textWidth / 2;
-    const yMain = this.viewportHeight / 2 - offsetY;
-    ctx.fillText(mainText, xMain, yMain);
-
-    //TODO: Clean up this mess
-    //these need to be attributes
     const buttonX = xMain + textWidth / 4 - playAgainW / 4;
     const buttonY = yMain + 45;
     const buttonW = playAgainW + 30;
@@ -45,9 +32,24 @@ export default class EndGameScreen {
     this.buttonW = buttonW;
     this.buttonH = buttonH;
     ctx.font = "30px Times New Roman";
-    ctx.fontWeight = "700";
-    //messy,but i don't have enough time to clean it up
     ctx.strokeRect(buttonX, buttonY, buttonW, buttonH);
     ctx.fillText(playagain, xMain + textWidth / 4, yMain + 80);
+  }
+  drawGameOver(ctx) {
+    ctx.font = "50px Times New Roman";
+    ctx.fillStyle = "black";
+    const mainText = "GAME OVER";
+    const textWidth = ctx.measureText(mainText).width;
+
+    const offsetY = 30;
+    const xMain = this.viewportWidth / 2 - textWidth / 2;
+    const yMain = this.viewportHeight / 2 - offsetY;
+    ctx.fillText(mainText, xMain, yMain);
+    return [xMain, yMain, textWidth];
+  }
+  draw(ctx) {
+    if (!this.active) return;
+    const [mainX, mainY, textWidth] = this.drawGameOver(ctx);
+    this.drawPlayAgain(ctx, mainX, mainY, textWidth);
   }
 }

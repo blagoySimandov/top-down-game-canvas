@@ -46,15 +46,18 @@ export class TotalEnemies extends Array {
   constructor(player, ...args) {
     super(...args);
     this.enemyId = 0;
-    let timeInterval = 1000;
+    this.timeInterval = 1000;
+    this.hardness = 0;
     setInterval(() => {
-      timeInterval -= 10;
+      this.timeInterval -= 10;
+      this.hardness += 1;
     }, 3000);
+
     //not exactly pretty...
     setInterval(() => {
-      this.spawnEnemy(player);
+      this.spawnEnemy(player, this.hardness);
       this.enemyId++;
-    }, timeInterval);
+    }, this.timeInterval);
   }
   enemyCollision(enemy1) {
     if (!enemy1.active) return;
@@ -97,7 +100,7 @@ export class TotalEnemies extends Array {
     });
   }
 
-  spawnEnemy(player) {
-    this.push(Enemy.spawn(this.enemyId, player));
+  spawnEnemy(player, hardness) {
+    this.push(Enemy.spawn(this.enemyId, player, hardness));
   }
 }
