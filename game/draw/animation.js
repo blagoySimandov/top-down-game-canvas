@@ -7,6 +7,7 @@ export class Animation {
     if (keyframes) {
       this.currentFrame = currentFrame;
       this.keyframes = keyframes;
+      this.stop = false;
       this.cropWidth = Math.ceil(keyframes.image.width / frames);
       this.maxFrame = endFrame || frames;
       this.skippedFrames = skippedFrames || 0;
@@ -15,9 +16,13 @@ export class Animation {
       this.ratioHW = this.keyframes.image.height / this.cropWidth; //Shoud get the correct ratio of each keyframe
     }
   }
+  stopAnim() {
+    this.stop = true;
+  }
   /**Starts the animation.
    */
   getAnimationDrawer() {
+    if (this.stop) return null;
     if (this.currentFrame < this.maxFrame) {
       const drawer = Drawer.getCroppedImageDrawer(
         this.keyframes,

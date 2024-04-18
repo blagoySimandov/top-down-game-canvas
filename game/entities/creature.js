@@ -9,6 +9,7 @@ import { resolveCollision, boxCollision } from "../utils.js";
 import { Animation, OrientedAnimation } from "../draw/animation.js";
 import { Rifle } from "./weapon.js";
 import { getRandomInt } from "../utils.js";
+import { TotalEnemies } from "./total.js";
 export class Creature {
   /**
    * @param {int} width - width of the creature
@@ -66,30 +67,15 @@ export class Creature {
    */
   lowerHp(dmg) {
     this.hp -= dmg;
+    if (this.hp < 0) this.hp = 0;
   }
   draw(ctx) {
-    ctx.fillStyle = this.color;
-    if (this.sprite) {
-      ctx.drawRect(
-        this.sprite,
-        this.movement.xPos,
-        this.movement.yPos,
-        this.width,
-        this.height
-      );
-    } else {
-      ctx.fillRect(
-        this.movement.xPos,
-        this.movement.yPos,
-        this.width,
-        this.height
-      );
-    }
+    console.error("draw is not implemented");
   }
 }
 
 export class Enemy extends Creature {
-  constructor({ xPos, yPos, width, height, id, score }, speed, hp) {
+  constructor({ xPos, yPos, width, height, id, score }, speed, hp, dmg) {
     const movemementSpeed = speed || 10;
 
     const enemyAnimationRight = new Animation(assets.get("enemy1Right"), {
@@ -125,10 +111,11 @@ export class Enemy extends Creature {
     );
     this.id = id || -1;
     this.score = score;
+    this.dmg = dmg;
   }
   /**
    * @param {Enemy} enemy
-   * @description Takes an enemy as an arguments, hecks collison and resolves that collison if needed
+   * @description Takes an enemy as an arguments, checks collison and resolves that collison if needed
    */
   collisionDetect(object) {
     return this !== object && boxCollision(this, object);
@@ -140,7 +127,6 @@ export class Enemy extends Creature {
   }
 
   /** spawns and enemy at a random postion on the edge of the screen*/
-  /**Should move it in a factory. //Don't have time for this now. Will do it later. (probably ;d)// */
   static spawn(id, player) {
     const side = Math.floor(Math.random() * 4);
     const enemyHeight = 90;
@@ -182,6 +168,9 @@ export class Enemy extends Creature {
         yPos = yRandom;
         break;
     }
+    const speed = getRandomInt(0, 10);
+    const dmg = getRandomInt(5, 20);
+    const hp = getRandomInt(0, 50);
     return new Enemy(
       {
         xPos: xPos,
@@ -191,14 +180,15 @@ export class Enemy extends Creature {
         id: id,
         score: 100,
       },
-      3,
-      20
+      speed,
+      hp,
+      dmg
     );
   }
-  update(px, py) {
+  update(px, py, pActive) {
     if (!this.active) return;
     const [dx, dy] = this.movement.follow(px, py);
-
+    if (pActive) this.movement.incrementPosition();
     const drawer = this.getCorrectOrientedDrawer(dx, dy);
     this.drawer = drawer;
   }
@@ -223,6 +213,7 @@ export class Enemy extends Creature {
     this.drawer(ctx, drawX, drawY, this.width, this.height);
   }
 }
+
 export class Player extends Creature {
   constructor(xPos, yPos, width, height, speed) {
     const movement = new PlayerMovement(speed, xPos, yPos);
@@ -262,47 +253,83 @@ export class Player extends Creature {
       plIdleAnimationLeft,
       plIdleAnimationRight
     );
-    super(width, height, movement, moveAnimation, idleAnimation);
+    const deathAnimation = new Animation(assets.get("bloodSplatter30"), {
+      frames: 30,
+      currentFrame: 0,
+      skippedFrames: 0,
+    });
+    super(
+      width,
+      height,
+      movement,
+      moveAnimation,
+      idleAnimation,
+      100,
+      true,
+      deathAnimation
+    );
+
     this.weapon = new Rifle(xPos, yPos, this.height); //default weapon;
   }
 
-  update(cursor, bullets) {
+  update(cursor, bullets, mapDimensions) {
     this.movement.changeDirectionByFollowX(cursor.gameX, this.xPos);
     const shotResult = this.weapon.shoot(
       cursor,
       this.movement.xPos,
-      this.movement.yPos
+      this.movement.yPos,
+      this.active
     );
     if (shotResult) {
       bullets?.push(shotResult);
     }
-    //Should definitely move the drawer and animations to the Parent class (shouldnt be inside movement)
-    const [dx, dy] = this.movement.move();
-    this.drawer = this.getCorrectOrientedDrawer(dx, dy);
+    if (this.hp <= 0) this.active = false;
+    const [dx, dy] = this.movement.move(mapDimensions, this.active);
+    this.drawer = this.active
+      ? this.getCorrectOrientedDrawer(dx, dy)
+      : this.deathAnimation.getAnimationDrawer();
     this.weapon.updatePos(dx, dy);
   }
   drawChar(ctx, viewport) {
-    let drawX = this.cx;
-    let drawY = this.cy;
+    //... currentFrame shouldnt have started from zero...
+    if (
+      !this.active &&
+      this.deathAnimation.currentFrame === this.deathAnimation.maxFrame
+    ) {
+      this.deathAnimation.stopAnim();
+      this.dead = true;
+    }
+    let drawX = this.cx; // Center x-coordinate
+    let drawY = this.cy; // Center y-coordinate
+
     if (viewport.followingX) {
       drawX = viewport.x + viewport.w / 2;
     }
     if (viewport.followingY) {
       drawY = viewport.y + viewport.h / 2;
     }
-    this.drawer(ctx, drawX, drawY, this.width, this.height);
+
+    const widthFactor = this.active ? 1 : 3 / 2;
+    const heightFactor = this.active ? 1 : 3 / 2;
+
+    this.drawer(
+      ctx,
+      drawX - ((widthFactor - 1) * this.width) / 2,
+      drawY - ((heightFactor - 1) * this.height) / 2,
+      this.width * widthFactor,
+      this.height * heightFactor
+    );
   }
+
   draw(ctx, viewport, cursor) {
     if (this.drawer === null) {
       return;
     }
     if (this.movement.orientation === Orientation.right) {
       this.drawChar(ctx, viewport);
-
-      this.weapon.draw(ctx, cursor);
+      if (this.active) this.weapon.draw(ctx, cursor);
     } else {
-      this.weapon.draw(ctx, cursor);
-
+      if (this.active) this.weapon.draw(ctx, cursor);
       this.drawChar(ctx, viewport);
     }
   }

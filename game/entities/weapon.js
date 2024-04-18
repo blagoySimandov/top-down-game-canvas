@@ -19,8 +19,8 @@ class Weapon {
   setWeaponActivate() {
     this.weaponActivate = true;
   }
-  shoot(cursor, x, y) {
-    if (this.weaponActivate) {
+  shoot(cursor, x, y, holderActive) {
+    if (this.weaponActivate && holderActive) {
       const bullet = new Bullet(this.dmg, 33, x, y, cursor.gameX, cursor.gameY);
       this.weaponActivate = false;
       return bullet;

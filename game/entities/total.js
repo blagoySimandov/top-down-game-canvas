@@ -46,11 +46,15 @@ export class TotalEnemies extends Array {
   constructor(player, ...args) {
     super(...args);
     this.enemyId = 0;
+    let timeInterval = 1000;
+    setInterval(() => {
+      timeInterval -= 10;
+    }, 3000);
     //not exactly pretty...
     setInterval(() => {
       this.spawnEnemy(player);
       this.enemyId++;
-    }, 1000);
+    }, timeInterval);
   }
   enemyCollision(enemy1) {
     if (!enemy1.active) return;
@@ -73,11 +77,26 @@ export class TotalEnemies extends Array {
       ) {
         this.removeEnemyAtIndex(idx);
       }
+      if (
+        enemy.active &&
+        //Im so sorry for the 5 lines below.
+        enemy.collisionDetect({
+          movement: {
+            xPos: player.cx,
+            yPos: player.cy,
+          },
+          width: player.width,
+          height: player.height,
+        })
+      ) {
+        player.lowerHp(enemy.dmg);
+      }
       enemy.draw(ctx);
-      enemy.update(player.movement.xPos, player.movement.yPos);
+      enemy.update(player.movement.xPos, player.movement.yPos, player.active);
       this.enemyCollision(enemy);
     });
   }
+
   spawnEnemy(player) {
     this.push(Enemy.spawn(this.enemyId, player));
   }

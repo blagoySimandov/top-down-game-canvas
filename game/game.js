@@ -3,7 +3,8 @@ import { Map } from "./map/map.js";
 import { assets } from "./draw/assets.js";
 import { TotalBullets, TotalEnemies } from "./entities/total.js";
 import { Camera } from "./viewport/camera.js";
-import Score from "./viewport/score.js";
+import InfoBoard from "./viewport/score.js";
+import EndGameScreen from "./viewport/endgame.js";
 import { Cursor } from "./cursor/cursor.js";
 
 //globals are created on module load
@@ -14,22 +15,32 @@ const map = new Map();
 const camera = new Camera(player);
 const bullets = new TotalBullets();
 const totalEnemies = new TotalEnemies(player);
-const scoreboard = new Score(camera.viewport.w, camera.viewport.h);
-export const cursor = new Cursor(weapon);
+const infoboard = new InfoBoard(camera.viewport.w, camera.viewport.h, player);
+const endGameScreen = new EndGameScreen(
+  infoboard,
+  camera.viewport.w,
+  camera.viewport.h
+);
+export const cursor = new Cursor(weapon, endGameScreen);
 export function game(ctx) {
   camera.update(map.mapWidth, map.mapHeight);
   map.drawMap(ctx, camera.viewport);
-  scoreboard.draw(ctx);
+  infoboard.draw(ctx, player.hp);
+
   ctx.save();
   ctx.translate(-camera.viewport.x, -camera.viewport.y);
   drawRelativeToViewport(ctx, camera.viewport);
   ctx.restore();
+
+  if (!player.active) endGameScreen.activateEndgameScreen();
+  if (endGameScreen.playAgain) history.go();
+  endGameScreen.draw(ctx);
 }
 function drawRelativeToViewport(ctx, viewport) {
-  scoreboard.score += bullets.updateBullets(ctx, viewport, totalEnemies);
+  infoboard.score += bullets.updateBullets(ctx, viewport, totalEnemies);
   player.draw(ctx, viewport, cursor);
   cursor.setGamePos(cursor.x + camera.viewport.x, cursor.y + camera.viewport.y);
   cursor.draw(ctx);
-  player.update(cursor, bullets);
+  player.update(cursor, bullets, [map.mapWidth, map.mapHeight]);
   totalEnemies.drawAndUpdateEnemies(ctx, player);
 }

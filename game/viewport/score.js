@@ -1,4 +1,4 @@
-export default class Score {
+export default class InfoBoard {
   constructor(viewportWidth, viewportHeight) {
     this.score = 0;
     this.viewportWidth = viewportWidth;
@@ -7,7 +7,7 @@ export default class Score {
   addToScore(adder) {
     this.score += adder;
   }
-  draw(ctx) {
+  draw(ctx, playerhp) {
     ctx.font = "24px Times New Roman";
     ctx.fillStyle = "black";
     const scoreText = "Score: " + this.score;
@@ -15,5 +15,10 @@ export default class Score {
     const x = this.viewportWidth - textWidth - 60;
     const y = 30;
     ctx.fillText(scoreText, x, y);
+    //plyaerhp
+    const playerHpText = "HP: " + playerhp;
+    const playerHpTextX = 10;
+    const playerHpTextY = 30;
+    ctx.fillText(playerHpText, playerHpTextX, playerHpTextY);
   }
 }

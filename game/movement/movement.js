@@ -49,7 +49,6 @@ export class EnemyMovement extends Movement {
     this.dx = direction.targetX * this.speed;
     this.dy = direction.targetY * this.speed;
     this.changeDirectionByFollowX(x);
-    this.incrementPosition();
     return [this.dx, this.dy]; //not sure why im returning them instead of acessing them but seems cleaner this way (not sure.?)
   }
 }
@@ -87,9 +86,22 @@ export class PlayerMovement extends Movement {
       this.orientation = Orientation.right;
     }
   }
-  move() {
+  incrementPlayerPosition(mapWidth, mapHeight) {
+    const nextX = this.xPos + this.dx;
+    const nextY = this.yPos + this.dy;
+
+    if (nextX >= 0 && nextX < mapWidth) {
+      this.xPos = nextX;
+    }
+    if (nextY >= 0 && nextY < mapHeight) {
+      this.yPos = nextY;
+    }
+  }
+
+  move(mapDimensions, active) {
+    if (!active) return [0, 0];
     [this.dx, this.dy] = this.getPosChange();
-    this.incrementPosition();
+    this.incrementPosition(mapDimensions[0], mapDimensions[1]);
     return [this.dx, this.dy];
   }
 

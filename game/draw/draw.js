@@ -13,10 +13,9 @@ export class Drawer {
    * @param {int} nth - sets which image to get*/
   static getCroppedImageDrawer(sprite, widthOfSingleDivision, nth) {
     /**
-
-      *@param {canvasContext} ctx @param {number} posX @param {number} posY @param {number} width @param {number} height  canvas context for drawing.
-      *@param {boolean} debug - indicates whetherdebug mode is enabled (optional).
-*/
+     *@param {canvasContext} ctx @param {number} posX @param {number} posY @param {number} width @param {number} height  canvas context for drawing.
+     *@param {boolean} debug - indicates whetherdebug mode is enabled (optional).
+     */
     return (ctx, posX, posY, width, height, debug) => {
       if (debug) {
         console.log(

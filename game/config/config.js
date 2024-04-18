@@ -2,7 +2,7 @@ export const canvasConfig = {
   width: 1008,
   height: 704,
 };
-export const tileSize = 16;
+export const tileSize = 512;
 export const scaledTileSize = 32;
 export const Orientation = Object.freeze({
   left: 0,

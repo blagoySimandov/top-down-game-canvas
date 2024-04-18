@@ -35,6 +35,10 @@ export const assetDetails = {
     path: "/game/sprites/bloodSplatter30.png",
     orientation: Orientation.left,
   },
+  tileset: {
+    path: "/game/map/tileset.png",
+    orientation: null,
+  },
   bulletDeathAnim: {
     path: "/game/sprites/bulletDeathAnim.png",
     orientation: Orientation.left,

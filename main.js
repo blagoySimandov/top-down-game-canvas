@@ -16,7 +16,7 @@ async function init() {
   canvas.width = canvasConfig.width;
   canvas.height = canvasConfig.height;
   context = canvas.getContext("2d");
-  context.imageSmoothingEnabled = false;
+  context.imageSmoothingEnabled = true;
   await loadAssets(assetDetails);
 
   const { game, playerMovement, cursor } = await import("./game/game.js");
@@ -52,5 +52,5 @@ function draw(game) {
     }
   }
 
-  let requestId = requestAnimationFrame(() => draw(game));
+  let _ = requestAnimationFrame(() => draw(game));
 }

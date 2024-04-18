@@ -2,7 +2,8 @@ import { assets } from "../draw/assets.js";
 import { Drawer } from "../draw/draw.js";
 
 export class Cursor {
-  constructor(weapon) {
+  constructor(weapon, endgameScreen) {
+    this.endgameScreen = endgameScreen;
     this.x = 0;
     this.weapon = weapon;
     this.y = 0;
@@ -26,6 +27,8 @@ export class Cursor {
       this.y = event.clientY - rect.top;
     });
     cnv.addEventListener("click", (event) => {
+      if (this.endgameScreen.active)
+        this.endgameScreen.handleClick(this.x, this.y);
       this.weapon.setWeaponActivate();
     });
   }
